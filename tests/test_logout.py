@@ -7,7 +7,6 @@ from locators import (
     USER_NAME,
 )
 
-
 class TestLogout:
 
     def test_logout_user(
@@ -23,18 +22,18 @@ class TestLogout:
             ec.element_to_be_clickable(LOGOUT_BUTTON)
         ).click()
 
-        login_button = wait.until(
+#Взаимодействие с элементами-маркерами успеха настроено только на ассертах
+        assert wait.until(
             ec.visibility_of_element_located(
                 LOGIN_AND_REGISTRATION_BUTTON
             )
+        ).is_displayed()
+
+#Ожидается исчезновение элементов
+        assert wait.until(
+            ec.invisibility_of_element_located(USER_AVATAR_BUTTON)
         )
 
-        assert login_button.is_displayed()
-
-        assert not set_authorized_user.find_elements(
-            *USER_AVATAR_BUTTON
-        )
-
-        assert not set_authorized_user.find_elements(
-            *USER_NAME
+        assert wait.until(
+            ec.invisibility_of_element_located(USER_NAME)
         )

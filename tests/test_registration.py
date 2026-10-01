@@ -1,36 +1,22 @@
 from selenium.webdriver.support import expected_conditions as ec
 
-from constants import (
-    ELEMENT_ERROR_COLOUR,
+from data import (
     INCORRECT_EMAIL,
     REGISTRATION_PASSWORD,
     USER_EMAIL,
+    ELEMENT_ERROR_COLOUR,
 )
 
 from locators import (
     CREATE_ACCOUNT_BUTTON,
+    ERROR_INPUT_PARENT,
     EMAIL_ERROR_MESSAGE,
     EMAIL_INPUT,
-    ERROR_INPUT_PARENT,
     PASSWORD_INPUT,
     PASSWORD_REPEAT_INPUT,
     USER_AVATAR_BUTTON,
     USER_NAME,
 )
-
-
-def fill_registration_form(wait, email, password):
-    wait.until(
-        ec.visibility_of_element_located(EMAIL_INPUT)
-    ).send_keys(email)
-
-    wait.until(
-        ec.visibility_of_element_located(PASSWORD_INPUT)
-    ).send_keys(password)
-
-    wait.until(
-        ec.visibility_of_element_located(PASSWORD_REPEAT_INPUT)
-    ).send_keys(password)
 
 
 class TestRegistration:
@@ -40,9 +26,9 @@ class TestRegistration:
         registration_page,
         wait,
         registration_email,
+        fill_registration_form,
     ):
         fill_registration_form(
-            wait=wait,
             email=registration_email,
             password=REGISTRATION_PASSWORD,
         )
@@ -51,24 +37,21 @@ class TestRegistration:
             ec.element_to_be_clickable(CREATE_ACCOUNT_BUTTON)
         ).click()
 
-        wait.until(
+        assert wait.until(
             ec.visibility_of_element_located(USER_AVATAR_BUTTON)
-        )
+        ).is_displayed()
 
-        user_name = wait.until(
+        assert wait.until(
             ec.visibility_of_element_located(USER_NAME)
-        )
-
-        assert user_name.is_displayed()
-        assert user_name.text.strip() != ""
+        ).text.strip() != ""
 
     def test_registration_existing_user(
         self,
         registration_page,
         wait,
+        fill_registration_form,
     ):
         fill_registration_form(
-            wait=wait,
             email=USER_EMAIL,
             password=REGISTRATION_PASSWORD,
         )
@@ -77,15 +60,25 @@ class TestRegistration:
             ec.element_to_be_clickable(CREATE_ACCOUNT_BUTTON)
         ).click()
 
-        error_message = wait.until(
+        assert wait.until(
             ec.visibility_of_element_located(EMAIL_ERROR_MESSAGE)
-        )
+        ).text == "Ошибка"
 
-        assert error_message.text == "Ошибка"
+        for field_locator in (
+            EMAIL_INPUT,
+            PASSWORD_INPUT,
+            PASSWORD_REPEAT_INPUT,
+        ):
+            field = wait.until(
+                ec.visibility_of_element_located(field_locator)
+            )
 
-        self._assert_registration_fields_have_error(
-            wait
-        )
+            parent = field.find_element(*ERROR_INPUT_PARENT)
+
+            assert (
+                parent.value_of_css_property("border-color")
+                == ELEMENT_ERROR_COLOUR
+            )
 
     def test_registration_with_invalid_email(
         self,
@@ -100,18 +93,10 @@ class TestRegistration:
             ec.element_to_be_clickable(CREATE_ACCOUNT_BUTTON)
         ).click()
 
-        error_message = wait.until(
+        assert wait.until(
             ec.visibility_of_element_located(EMAIL_ERROR_MESSAGE)
-        )
+        ).text == "Ошибка"
 
-        assert error_message.text == "Ошибка"
-
-        self._assert_registration_fields_have_error(
-            wait
-        )
-
-    @staticmethod
-    def _assert_registration_fields_have_error(wait):
         for field_locator in (
             EMAIL_INPUT,
             PASSWORD_INPUT,
@@ -123,8 +108,7 @@ class TestRegistration:
 
             parent = field.find_element(*ERROR_INPUT_PARENT)
 
-            actual_border_colour = (
+            assert (
                 parent.value_of_css_property("border-color")
+                == ELEMENT_ERROR_COLOUR
             )
-
-            assert actual_border_colour == ELEMENT_ERROR_COLOUR

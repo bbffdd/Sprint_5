@@ -2,6 +2,8 @@ from selenium.webdriver.support import expected_conditions as ec
 
 from constants import (
     BASE_URL,
+)
+from data import (
     USER_EMAIL,
     USER_PASSWORD,
 )
@@ -17,45 +19,40 @@ from locators import (
 )
 
 
-def test_login_user(driver, wait):
-    driver.get(BASE_URL)
+class TestLogin:
+    def test_login_user(self, driver, wait):
+        driver.get(BASE_URL)
 
-    wait.until(
-        ec.element_to_be_clickable(
-            LOGIN_AND_REGISTRATION_BUTTON
-        )
-    ).click()
+        wait.until(
+            ec.element_to_be_clickable(
+                LOGIN_AND_REGISTRATION_BUTTON
+            )
+        ).click()
 
-    wait.until(
-        ec.visibility_of_element_located(EMAIL_INPUT)
-    ).send_keys(USER_EMAIL)
+        wait.until(
+            ec.visibility_of_element_located(EMAIL_INPUT)
+        ).send_keys(USER_EMAIL)
 
-    wait.until(
-        ec.visibility_of_element_located(PASSWORD_INPUT)
-    ).send_keys(USER_PASSWORD)
+        wait.until(
+            ec.visibility_of_element_located(PASSWORD_INPUT)
+        ).send_keys(USER_PASSWORD)
 
-    wait.until(
-        ec.element_to_be_clickable(LOGIN_BUTTON)
-    ).click()
+        wait.until(
+            ec.element_to_be_clickable(LOGIN_BUTTON)
+        ).click()
 
-    # Проверяем наличие кнопки размещения объявления
-    ad_button = wait.until(
-        ec.visibility_of_element_located(AD_BUTTON)
-    )
+#Корректная конструкция элемента-маркера успеха
+        assert wait.until(
+            ec.visibility_of_element_located(AD_BUTTON)
+        ).text.strip() == "Разместить объявление"
 
-    assert ad_button.is_displayed()
-    assert ad_button.text.strip() == "Разместить объявление"
+#Корректная конструкцмя элемента-маркера успеха
+        # Проверяем наличие аватара пользователя
+        assert wait.until(
+            ec.visibility_of_element_located(USER_AVATAR_BUTTON)
+        ).is_displayed()
 
-    # Проверяем наличие аватара пользователя
-    avatar = wait.until(
-        ec.visibility_of_element_located(USER_AVATAR_BUTTON)
-    )
-
-    assert avatar.is_displayed()
-
-    # Проверяем имя пользователя
-    user_name = wait.until(
-        ec.visibility_of_element_located(USER_NAME)
-    )
-
-    assert user_name.text.strip() == "User."
+        # Проверяем имя пользователя
+        assert wait.until(
+            ec.visibility_of_element_located(USER_NAME)
+        ).text.strip() == "User."
